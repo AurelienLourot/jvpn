@@ -399,7 +399,7 @@ my $start_t = time;
 my ($socket,$client_socket);
 my $data;
 if($mode eq "ncsvc") {
-	system("./ncsvc >/dev/null 2>/dev/null &");
+	system("strace ./ncsvc >/dev/null 2>/dev/null &");
 	# connecting to ncsvc using TCP
 	$socket = retry_port(4242);
 
