@@ -68,10 +68,16 @@ $ git clone https://github.com/AurelienLourot/jvpn/
 $ cd jvpn/
 ```
 
-### Edit jvpn.ini
+### Create jvpn.ini
 
-Edit `jvpn`'s configuration file `jvpn.ini` to fit your needs. In particular set the variables
-`host`, `url`, `username`, `realm` and `password`.
+Create a default `jvpn`'s configuration file `jvpn.ini`:
+
+```
+$ cp jvpn.sample.ini jvpn.ini
+```
+
+Edit it to fit your needs. In particular set the variables `host`, `url`, `username`, `realm` and
+`password`.
 
 **Do not** change the `debug` variable.
 
