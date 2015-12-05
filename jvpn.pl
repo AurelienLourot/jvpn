@@ -174,18 +174,40 @@ my $dfirst="";
 if ($res->is_success) {
 	print("Transfer went ok\n");
 	# next token request
-	if ($response_body =~ /name="frmDefender"/ || $response_body =~ /name="frmNextToken"/) {
+	if ($response_body =~ /name="frmDefender"/ || $response_body =~ /name="frmNextToken"/ || $response_body =~ /name="frmLogin"/) {
 		$response_body =~ m/name="key" value="([^"]+)"/;
 		my $key=$1;
 		print  "The server requires that you enter an additional token ".
 			"code to verify that your credentials are valid.\n";
 		# grid cards. $1 contains grid reference
-		if ($response_body =~ /Challenge:([^"]+)\./) {
-			print $1;
+		if ($response_body =~ /Verification Code:*.*/) {
 			print "\n";
-			print "Enter challenge response: ";
-			$password=read_input("password");
+			$response_body=$res->decoded_content;
+			print "Enter authentication token: ";
+			my $googletoken=read_input("token");
 			print "\n";
+			my $res = $ua->post("https://$dhost:$dport/dana-na/auth/$durl/login.cgi",
+					[ btnSubmit   => 'Sign In',
+				        "password#2" => $googletoken,
+					key  => $key,
+					tz  => '60',
+				        ]);
+                        $response_body=$res->decoded_content;
+		}
+		# challenge response
+		elsif ($response_body =~ /Challenge:*.*/) {
+			print "\n";
+			$response_body=$res->decoded_content;
+			print "Enter one time password: ";
+			my $otp=read_input("token");
+			print "\n";
+			my $res = $ua->post("https://$dhost:$dport/dana-na/auth/$durl/login.cgi",
+					[ btnSubmit   => 'Sign In',
+				        "password" => $otp,
+					key  => $key,
+					tz  => '60',
+				        ]);
+                        $response_body=$res->decoded_content;
 		}
 		# if password was specified in plaintext we should not use it 
 		# here, it will not work anyway
@@ -204,12 +226,6 @@ if ($res->is_success) {
 			$password=run_pw_helper($1);
 			delete $ENV{'OLDPIN'}; 
 		}
-		$res = $ua->post("https://$dhost:$dport/dana-na/auth/$durl/login.cgi",
-			[ Enter   => 'secidactionEnter',
-			password  => $password,
-			key  => $key,
-			]);
-		$response_body=$res->decoded_content;
 	}
 	if ( $response_body =~ /Invalid username or password/){
 		print "Invalid user name or password, exiting \n";
@@ -285,11 +301,17 @@ if ($res->is_success) {
 	}
 	# active sessions found
 	if ($response_body =~ /id="DSIDConfirmForm"/) {
+		$response_body =~ m/name="postfixSID" value="([^"]+)"/;
+		my $postfixsid = $1;
+		print $debug?"$postfixsid\n":"";
 		$response_body =~ m/name="FormDataStr" value="([^"]+)"/;
+		my $datastr = $1;
+                print $debug?"$datastr\n":"";
 		print "Active sessions found, reconnecting...\n";
 		$res = $ua->post("https://$dhost:$dport/dana-na/auth/$durl/login.cgi",
-			[ btnContinue   => 'Continue the session',
-			FormDataStr  => $1,
+			[ postfixSID =>  $postfixsid,
+			btnContinue   => 'Continue the session',
+			FormDataStr  => $datastr,
 			]);
 		$response_body=$res->decoded_content;
 	}
@@ -311,9 +333,9 @@ if ($res->is_success) {
 	}
 	
 	# do not print DSID in normal mode for security reasons
-	print $debug?"Got DSID=$dsid, dfirst=$dfirst, dlast=$dlast\n":"Got DSID\n";
+	print $debug?"Got DSID=$dsid, dfirst=$dfirst, dlast=$dlast\n":"Processing DSID\n";
 	if ($dsid eq "") {
-		print "Unable to get DSID, exiting \n";
+		print "Unable to get DSID, the string is empty. Exiting \n";
 		exit 1;
 	}
 	
