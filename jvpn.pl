@@ -415,6 +415,12 @@ if (!-e "./$mode") {
 	}
 }
 
+# restarting shill, see
+# https://github.com/dnschneid/crouton/wiki/Using-Cisco-AnyConnect-VPN-with-openconnect#solution-to-make-the-tun0-interface-stable-and-the-openvpn-command-reliable
+print "Restarting shill...\n";
+system("stop shill && start shill BLACKLISTED_DEVICES=tun0 && sleep 10");
+print "Shill restarted.\n";
+
 
 my $start_t = time;
 
