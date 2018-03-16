@@ -3,6 +3,10 @@
 This fork is a workaround for running [jvpn](https://github.com/samm-git/jvpn) in
 [crouton](https://github.com/dnschneid/crouton) on a chromebook ASUS C200.
 
+> :warning: This is now obsolete as Pulse Secure has released a
+> [VPN client for Chrome OS](https://chrome.google.com/webstore/detail/pulse-secure/eiddfaedmgnpnnojolcknhpjbmmpplgd)
+> meanwhile.
+
 ## Explanation
 
 ### Original issue 1
